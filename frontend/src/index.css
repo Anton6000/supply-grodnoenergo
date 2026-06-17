@@ -1,0 +1,28 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100vw;
+  min-width: 0;
+}
+
+html,
+body {
+  overflow-x: hidden;
+}
+
+body {
+  cursor: default;
+}
+
+button {
+  cursor: pointer;
+}
