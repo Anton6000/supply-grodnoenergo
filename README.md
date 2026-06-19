@@ -13,11 +13,8 @@
 - [О проекте](#о-проекте)
 - [Ключевые возможности](#ключевые-возможности)
 - [Архитектура](#архитектура)
-- [Серверные модули](#серверные-модули)
-- [Клиентская часть](#клиентская-часть)
 - [Жизненный цикл заявки](#жизненный-цикл-заявки)
 - [База данных](#база-данных)
-- [REST API](#rest-api)
 - [Маршруты клиентского приложения](#маршруты-клиентского-приложения)
 - [Перспективы развития](#перспективы-развития)
 - [Автор](#автор)
@@ -99,43 +96,6 @@ JSON-ответ → React обновляет интерфейс
 
 ---
 
-## Серверные модули
-
-Backend организован в пакетах `com.shop.ElectronicShop` по функциональным модулям. Каждый модуль построен по слоям: **controller → service → repository → entity → dto**.
-
-| Модуль | Назначение | Основные компоненты |
-|--------|------------|---------------------|
-| `client` | пользователи и аутентификация | `ClientAuthController`, `SystemUserListController`, `ClientAuthService`, `ClientRegistrationService`, `ClientRepository` |
-| `supply` | каталог номенклатуры | `SupplyGoodController`, `SupplyGoodService`, `SupplyGoodRepository`, фильтрация и метаданные |
-| `order` | заявки и корзина | `OrderController`, `OrderService`, `CustomerOrderRepository`, `OrderLineRepository` |
-| `config` | конфигурация приложения | `SecurityConfig` (CORS, Spring Security), `WebConfig` (раздача изображений) |
-
-**Примеры эндпоинтов по модулям:**
-- `client` — `/api/auth/login`, `/api/auth/register`, `/api/system-users`
-- `supply` — `/api/supply-goods`, `/api/supply-goods/meta`, `/api/supply-goods/catalog-summary`
-- `order` — `/api/orders/current`, `/api/orders/workspace`, `/api/orders/pickup`
-
----
-
-## Клиентская часть
-
-Frontend — одностраничное приложение (SPA) на **React 19**, собранное через Create React App.
-
-**Структура:**
-- `src/pages/` — экранные формы (главная, каталог, авторизация, корзина, профиль, панели кладовщика и администратора);
-- `src/context/AppDataContext.jsx` — общее состояние приложения;
-- `src/utils/` — валидация, формирование URL API, вспомогательные функции.
-
-**AppDataContext** — централизованное хранилище данных сессии:
-- после входа запоминается текущий пользователь (`currentUser`);
-- из PostgreSQL через REST API подгружаются корзина, заявки, счётчики и профиль;
-- все страницы получают актуальные данные через `useAppData()`;
-- при действиях пользователя (добавление товара, оформление заявки, смена статуса) выполняется запрос к API, Context обновляется, интерфейс перерисовывается.
-
-**Маршрутизация** — React Router 7, маршруты заданы в `App.js`. После авторизации пользователь перенаправляется в раздел, соответствующий его роли.
-
----
-
 ## Жизненный цикл заявки
 
 ```
@@ -185,51 +145,6 @@ draft (черновик)
 - один товар → может входить в разные заявки.
 
 Доступ к данным — через **Spring Data JPA** (Hibernate). Схема обновляется автоматически при запуске (`spring.jpa.hibernate.ddl-auto=update`).
-
----
-
-## REST API
-
-Базовый URL backend: `http://localhost:8080`
-
-### Аутентификация и пользователи
-
-| Метод | Путь | Назначение |
-|-------|------|------------|
-| POST | `/api/auth/login` | вход в систему |
-| POST | `/api/auth/register` | регистрация |
-| GET | `/api/system-users` | список пользователей |
-| GET | `/api/system-users/{id}` | профиль пользователя |
-| POST | `/api/system-users` | создание пользователя |
-| PUT | `/api/system-users/{id}` | обновление пользователя |
-| DELETE | `/api/system-users` | удаление пользователей |
-
-### Каталог номенклатуры
-
-| Метод | Путь | Назначение |
-|-------|------|------------|
-| GET | `/api/supply-goods` | список товаров с фильтрами |
-| GET | `/api/supply-goods/meta` | метаданные для фильтров и форм |
-| GET | `/api/supply-goods/catalog-summary` | сводка каталога для главной страницы |
-| GET | `/api/supply-goods/item/{id}` | карточка товара |
-| POST | `/api/supply-goods` | добавление товара |
-| PUT | `/api/supply-goods/{id}` | изменение товара |
-| DELETE | `/api/supply-goods` | удаление товаров |
-
-### Заявки
-
-| Метод | Путь | Назначение |
-|-------|------|------------|
-| GET | `/api/orders/current` | текущий черновик (корзина) |
-| POST | `/api/orders/current/items` | добавить товар в корзину |
-| PATCH | `/api/orders/current/items/{supplyGoodId}` | изменить количество |
-| DELETE | `/api/orders/current/items` | удалить позиции |
-| POST | `/api/orders/current/place` | оформить заявку |
-| GET | `/api/orders?userId=` | заявки пользователя |
-| GET | `/api/orders/workspace` | заявки для складской панели |
-| GET | `/api/orders/counts` | счётчики корзины и заявок |
-| PATCH | `/api/orders/{orderId}/status` | смена статуса (кладовщик) |
-| POST | `/api/orders/pickup` | подтверждение получения (сотрудник) |
 
 ---
 
